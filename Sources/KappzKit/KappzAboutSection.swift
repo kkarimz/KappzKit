@@ -13,6 +13,14 @@ public struct KappzAboutSection: View {
         self.config = config
     }
 
+    private var actionLinkColor: Color {
+        #if os(macOS)
+        Color(nsColor: .linkColor)
+        #else
+        Color.accentColor
+        #endif
+    }
+
     public var body: some View {
         Section {
             if let count = config.recordsCount, let title = config.recordsTitle {
@@ -35,7 +43,7 @@ public struct KappzAboutSection: View {
                 requestReview()
             } label: {
                 Label("Rate the App", systemImage: "star.fill")
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(actionLinkColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
             }
@@ -47,7 +55,7 @@ public struct KappzAboutSection: View {
                 } label: {
                     HStack {
                         Label(config.tipTitle, systemImage: config.tipSystemImage)
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(actionLinkColor)
                         Spacer()
                         if isPurchasingTip {
                             ProgressView()
