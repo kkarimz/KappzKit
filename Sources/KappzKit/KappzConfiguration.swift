@@ -25,6 +25,9 @@ public struct KappzConfiguration: Sendable {
     public var recordsTitle: String?
     public var recordsCount: Int?
     public var additionalLinks: [KappzLinkItem]
+    public var tipProductID: String?
+    public var tipTitle: String
+    public var tipSystemImage: String
 
     public var formattedVersion: String {
         "\(appVersion) (\(buildNumber))"
@@ -45,7 +48,10 @@ public struct KappzConfiguration: Sendable {
         companyName: String = "Kappz LLC",
         recordsTitle: String? = "Total Logs",
         recordsCount: Int? = nil,
-        additionalLinks: [KappzLinkItem] = []
+        additionalLinks: [KappzLinkItem] = [],
+        tipProductID: String? = Bundle.main.bundleIdentifier.map { "\($0).coffee" },
+        tipTitle: String = "Buy Me a Coffee",
+        tipSystemImage: String = "cup.and.saucer.fill"
     ) {
         let bundle = Bundle.main
         self.appName = appName
@@ -65,5 +71,8 @@ public struct KappzConfiguration: Sendable {
         self.recordsTitle = recordsTitle
         self.recordsCount = recordsCount
         self.additionalLinks = additionalLinks
+        self.tipProductID = tipProductID
+        self.tipTitle = tipTitle
+        self.tipSystemImage = tipSystemImage
     }
 }
