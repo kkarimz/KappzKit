@@ -1,6 +1,46 @@
 import SwiftUI
 import StoreKit
 
+public enum KappzCoffeeTip {
+    public static var defaultProductID: String? {
+        Bundle.main.bundleIdentifier.map { "\($0.replacingOccurrences(of: "-", with: "_")).coffee" }
+    }
+
+    @MainActor
+    public static func purchase(productID: String? = defaultProductID, appName: String? = nil) async -> (title: String, message: String)? {
+        guard let productID, !productID.isEmpty else {
+            return ("Unavailable", "Tip option is not available right now. Please try again later.")
+        }
+        let resolvedName = appName
+            ?? (Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String)
+            ?? (Bundle.main.infoDictionary?["CFBundleName"] as? String)
+            ?? "this app"
+        do {
+            let products = try await Product.products(for: [productID])
+            guard let product = products.first else {
+                return ("Unavailable", "Tip option is not available right now. Please try again later.")
+            }
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                if case .verified(let transaction) = verification {
+                    await transaction.finish()
+                    return ("Thank You!", "Thanks for supporting \(resolvedName)!")
+                }
+                return ("Verification Failed", "Your purchase could not be verified.")
+            case .pending:
+                return ("Purchase Pending", "Your purchase is waiting for approval.")
+            case .userCancelled:
+                return nil
+            @unknown default:
+                return nil
+            }
+        } catch {
+            return ("Purchase Failed", error.localizedDescription)
+        }
+    }
+}
+
 public struct KappzAboutSection: View {
     public let config: KappzConfiguration
     @Environment(\.requestReview) private var requestReview
@@ -124,35 +164,9 @@ public struct KappzAboutSection: View {
     private func purchaseTip(productID: String) async {
         isPurchasingTip = true
         defer { isPurchasingTip = false }
-        do {
-            let products = try await Product.products(for: [productID])
-            guard let product = products.first else {
-                tipAlertTitle = "Unavailable"
-                tipAlertMessage = "Tip option is not available right now. Please try again later."
-                return
-            }
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                if case .verified(let transaction) = verification {
-                    await transaction.finish()
-                    tipAlertTitle = "Thank You!"
-                    tipAlertMessage = "Thanks for supporting \(config.appName)!"
-                } else {
-                    tipAlertTitle = "Verification Failed"
-                    tipAlertMessage = "Your purchase could not be verified."
-                }
-            case .pending:
-                tipAlertTitle = "Purchase Pending"
-                tipAlertMessage = "Your purchase is waiting for approval."
-            case .userCancelled:
-                break
-            @unknown default:
-                break
-            }
-        } catch {
-            tipAlertTitle = "Purchase Failed"
-            tipAlertMessage = error.localizedDescription
+        if let outcome = await KappzCoffeeTip.purchase(productID: productID, appName: config.appName) {
+            tipAlertTitle = outcome.title
+            tipAlertMessage = outcome.message
         }
     }
 }
