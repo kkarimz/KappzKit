@@ -49,7 +49,7 @@ public struct KappzConfiguration: Sendable {
         recordsTitle: String? = "Total Logs",
         recordsCount: Int? = nil,
         additionalLinks: [KappzLinkItem] = [],
-        tipProductID: String? = Bundle.main.bundleIdentifier.map { "\($0).coffee" },
+        tipProductID: String? = Bundle.main.bundleIdentifier.map { "\($0.replacingOccurrences(of: "-", with: "_")).coffee" },
         tipTitle: String = "Buy Me a Coffee",
         tipSystemImage: String = "cup.and.saucer.fill"
     ) {
