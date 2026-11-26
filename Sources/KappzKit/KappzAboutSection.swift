@@ -31,15 +31,15 @@ public struct KappzAboutSection: View {
                     .foregroundStyle(.secondary)
             }
 
-            Link(destination: config.supportURL) {
-                Label("Support", systemImage: "questionmark.circle.fill")
-            }
-
             Button {
                 requestReview()
             } label: {
                 Label("Rate the App", systemImage: "star.fill")
+                    .foregroundStyle(Color.accentColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             if let tipProductID = config.tipProductID, !tipProductID.isEmpty {
                 Button {
@@ -47,6 +47,7 @@ public struct KappzAboutSection: View {
                 } label: {
                     HStack {
                         Label(config.tipTitle, systemImage: config.tipSystemImage)
+                            .foregroundStyle(Color.accentColor)
                         Spacer()
                         if isPurchasingTip {
                             ProgressView()
@@ -56,11 +57,17 @@ public struct KappzAboutSection: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 .disabled(isPurchasingTip)
                 .task(id: tipProductID) {
                     await loadTipPrice(productID: tipProductID)
                 }
+            }
+
+            Link(destination: config.supportURL) {
+                Label("Support", systemImage: "questionmark.circle.fill")
             }
 
             Link(destination: config.termsURL) {
